@@ -39,11 +39,11 @@ def exec_batch(batch, classifier, label):
     return result
 
 
-def labellio_exec(image_dir):
+def labellio_exec(image):
     global labellio_config, labellio_label, labellio_image_loader, labellio_classifier
     batch = []
-    for image in images(image_dir):
-        batch.append((image, labellio_image_loader.load(image)))
+    i=0
+    batch.append((image, labellio_image_loader.load(image)))
     return exec_batch(batch, labellio_classifier, labellio_label)
 
 # URL
@@ -58,17 +58,18 @@ def help():
 
 @app.route('/classify', methods=['POST'])
 def classify():
-    uploaded_file = request.files['image']
-    root, ext = os.path.splitext(uploaded_file.filename)
+    print request.form['url']
+
+    #root, ext = os.path.splitext(uploaded_file.filename)
+    root, ext = os.path.splitext(request.form['url'])
     temp_dir = ""
+    print ext
     if ext in app.config['SUPPORT_EXTENSIONS']:
-        temp_dir = tempfile.mkdtemp(dir=app.config['UPLOAD_FOLDER'])
-        uploaded_file.save(os.path.join(temp_dir, uploaded_file.filename))
+        pass
     else:
         abort(400)
 
-    result = labellio_exec(temp_dir)
-
+    result = labellio_exec('images/'+request.form['url'])
     response = make_response()
     response.data = json.dumps(result)
     response.headers["Content-Type"] = "application/json"
